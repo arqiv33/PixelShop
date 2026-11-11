@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Tienda en línea simulada con Pixelcoins (dinero ficticio)">
+<title>PixelShop · Tienda simulada</title>
+<style>
+:root{
+  --bg:#f7f5f2;--surface:#ffffff;--text:#2b2a33;--muted:#7a7785;--line:#e7e3dd;
+  --accent:#6c5ce7;--accent-soft:#ebe8fc;--ok:#2e9e6a;--warn:#b5472f;--warn-bg:#fbe9e4;
+  --shadow:0 2px 10px rgba(0,0,0,.06);color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161c;--surface:#23222b;--text:#f1eff6;--muted:#a09dab;--line:#34323e;
+    --accent:#9d8df5;--accent-soft:#2d2a44;--ok:#4cc38a;--warn:#ff9b8a;--warn-bg:#3a2526;
+    --shadow:none;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161c;--surface:#23222b;--text:#f1eff6;--muted:#a09dab;--line:#34323e;
+  --accent:#9d8df5;--accent-soft:#2d2a44;--ok:#4cc38a;--warn:#ff9b8a;--warn-bg:#3a2526;
+  --shadow:none;color-scheme:dark;
+}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0}
+[hidden]{display:none!important}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.4}
+h1,h2,h3{margin:.2em 0}
+h2{font-size:22px;margin:20px 0 14px}
+.muted{color:var(--muted);font-size:14px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.logo{background:none;border:0;font-size:20px;font-weight:800;color:var(--accent);cursor:pointer;padding:0}
+.search{flex:1 1 200px;padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:15px}
+.pill{background:var(--accent-soft);color:var(--accent);padding:8px 14px;border-radius:999px;font-size:14px;font-weight:700;white-space:nowrap}
+main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#fff;border:0;border-radius:12px;padding:12px 16px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn.small{padding:8px 12px;font-size:14px}
+.btn.full{width:100%;margin-top:10px}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:13px;padding:4px;font-family:inherit}
+.badge{background:var(--accent);color:#fff;border-radius:999px;padding:1px 8px;font-size:12px;margin-left:4px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:7px 14px;cursor:pointer;white-space:nowrap;font-family:inherit;font-size:14px}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-top:10px}
+.card,.panel{background:var(--surface);border-radius:16px;padding:16px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.card{display:flex;flex-direction:column;gap:8px}
+.emoji{font-size:52px;text-align:center;background:var(--accent-soft);border-radius:12px;padding:18px 0;line-height:1.1}
+.emoji.sm{font-size:30px;padding:10px;width:60px;flex:0 0 60px}
+.name{font-weight:600}
+.price{color:var(--accent);font-weight:700}
+.card .btn{margin-top:auto}
+.row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;flex-wrap:wrap}
+.grow{flex:1 1 140px}
+.qty{display:flex;align-items:center;gap:8px}
+.qty button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:16px;cursor:pointer}
+.qty span{min-width:20px;text-align:center;font-weight:600}
+.sub{font-weight:700;min-width:100px;text-align:right}
+.lines{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
+.line{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.line.total{font-weight:800;font-size:17px;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.empty{text-align:center;padding:40px 10px}
+.big{font-size:56px}
+.co{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:760px){.co{grid-template-columns:1.2fr 1fr;align-items:start}}
+form{display:flex;flex-direction:column;gap:12px}
+label{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600}
+input,textarea{padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:15px;font-family:inherit}
+textarea{min-height:70px;resize:vertical}
+.warn{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:12px;margin:12px 0;font-size:14px}
+.warn .btn{margin-top:8px}
+.thanks{text-align:center;padding:40px 16px}
+.thanks .lead{font-size:22px;font-weight:700;margin:8px 0}
+.thanks .panel{max-width:460px;margin:20px auto;text-align:left}
+.ok{color:var(--ok)}
+.loader{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;z-index:20;font-size:16px}
+.spin{width:44px;height:44px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:s 1s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,120px);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;transition:transform .3s;z-index:30;max-width:90%;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+.foot{text-align:center;color:var(--muted);font-size:12px;padding:20px 16px 30px}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="logo" data-go="shop">🛍️ PixelShop</button>
+  <input id="q" class="search" type="search" placeholder="Buscar productos…" aria-label="Buscar productos">
+  <div class="pill" id="bal"></div>
+  <button class="btn ghost small" data-go="cart">🛒 Carrito <span id="cartCount" class="badge">0</span></button>
+</header>
+
+<main>
+  <section id="shop">
+    <div id="chips" class="chips"></div>
+    <div id="grid" class="grid"></div>
+  </section>
+
+  <section id="cart" hidden>
+    <h2>Tu carrito</h2>
+    <div id="cartList"></div>
+    <div id="cartSum" class="panel">
+      <div class="lines" id="sumLines"></div>
+      <button class="btn full" data-go="checkout">Ir a pagar</button>
+      <button class="btn ghost full" data-go="shop">Seguir comprando</button>
+    </div>
+  </section>
+
+  <section id="checkout" hidden>
+    <h2>Finalizar compra</h2>
+    <div class="co">
+      <form id="coForm" class="panel">
+        <label>Nombre completo
+          <input name="nombre" value="Cliente Demo" required>
+        </label>
+        <label>Dirección de envío
+          <input name="direccion" value="Av. Pixel 123" required>
+        </label>
+        <label>Ciudad
+          <input name="ciudad" value="Ciudad Pixel" required>
+        </label>
+        <label>Notas para el repartidor (opcional)
+          <textarea name="notas" placeholder="Por ejemplo: dejar en portería"></textarea>
+        </label>
+      </form>
+      <aside class="panel">
+        <h3>Resumen</h3>
+        <div class="lines" id="coSum"></div>
+        <p class="muted">Método de pago: Pixelcoins 🪙 · Saldo: <b id="coBal"></b></p>
+        <div id="coWarn" class="warn" hidden>
+          No tienes saldo suficiente para esta compra.
+          <div><button class="btn small" data-recharge="1">Recargar 1,000 PC</button></div>
+        </div>
+        <button id="coBtn" class="btn full" type="submit" form="coForm">Confirmar compra</button>
+        <button class="btn ghost full" data-go="cart">Volver al carrito</button>
+      </aside>
+    </div>
+  </section>
+
+  <section id="thanks" class="thanks" hidden>
+    <div class="big ok">✅</div>
+    <h1>¡Compra realizada!</h1>
+    <p class="lead">Su compra llegará pronto 📦</p>
+    <div class="panel">
+      <div class="line"><span>Número de pedido</span><b id="orderId"></b></div>
+      <div class="line"><span>Total pagado</span><span id="paid"></span></div>
+      <div class="line"><span>Saldo restante</span><span id="left"></span></div>
+      <div class="line"><span>Llegada estimada</span><span>3 a 5 días hábiles</span></div>
+    </div>
+    <button class="btn" data-go="shop">Seguir explorando</button>
+  </section>
+</main>
+
+<footer class="foot">Tienda simulada · Todo el dinero son Pixelcoins ficticias 🪙. No se realiza ningún cargo real.</footer>
+
+<div id="loader" class="loader" hidden>
+  <div class="spin"></div>
+  <p>Procesando tu compra…</p>
+</div>
+
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+const BASE=[
+{id:1,name:"Audífonos inalámbricos",emoji:"🎧",price:890,cat:"Tecnología"},
+{id:2,name:"Taza de cerámica",emoji:"☕",price:120,cat:"Hogar"},
+{id:3,name:"Tenis para correr",emoji:"👟",price:650,cat:"Moda"},
+{id:4,name:"Planta de interior",emoji:"🌿",price:180,cat:"Hogar"},
+{id:5,name:"Novela de misterio",emoji:"📖",price:240,cat:"Libros"},
+{id:6,name:"Mochila urbana",emoji:"🎒",price:410,cat:"Moda"},
+{id:7,name:"Lámpara de escritorio",emoji:"💡",price:320,cat:"Hogar"},
+{id:8,name:"Cuaderno de bullet journal",emoji:"📓",price:95,cat:"Libros"},
+{id:9,name:"Playera de algodón",emoji:"👕",price:150,cat:"Moda"},
+{id:10,name:"Termo de acero",emoji:"🥤",price:210,cat:"Hogar"},
+{id:11,name:"Cámara instantánea",emoji:"📷",price:1200,cat:"Tecnología"},
+{id:12,name:"Chocolate artesanal",emoji:"🍫",price:60,cat:"Comida"},
+{id:13,name:"Cojín suave",emoji:"🛋️",price:175,cat:"Hogar"},
+{id:14,name:"Teclado mecánico",emoji:"⌨️",price:760,cat:"Tecnología"}
+];
+const CATS=["Todos","Hogar","Moda","Tecnología","Libros","Comida"];
+const POOL={
+Hogar:[["Silla","🪑"],["Espejo","🪞"],["Vela","🕯️"],["Florero","🏺"],["Reloj de pared","🕰️"],["Tapete","🧶"],["Almohada","🛏️"],["Perchero","🧥"],["Maceta","🪴"],["Frutero","🍎"]],
+Moda:[["Camisa","👔"],["Gorra","🧢"],["Sudadera","🧥"],["Bufanda","🧣"],["Calcetines","🧦"],["Chamarra","🧥"],["Vestido","👗"],["Sandalias","👡"],["Cinturón","👜"],["Gafas de sol","🕶️"]],
+Tecnología:[["Bocina","🔊"],["Smartwatch","⌚"],["Mouse","🖱️"],["Cargador","🔌"],["Tableta","📱"],["Audífonos","🎧"],["Webcam","📹"],["Power bank","🔋"],["Monitor","🖥️"],["Dron","🛸"]],
+Libros:[["Novela","📖"],["Cómic","💥"],["Diario","📔"],["Libro de cocina","🍳"],["Poemario","🪶"],["Atlas","🗺️"],["Guía de viaje","🧭"],["Ensayo","📝"],["Libro infantil","🧸"],["Biografía","👤"]],
+Comida:[["Café","☕"],["Galletas","🍪"],["Té","🍵"],["Miel","🍯"],["Pan","🥖"],["Queso","🧀"],["Dulce","🍬"],["Mermelada","🫙"],["Nueces","🥜"],["Aceite de oliva","🫒"]]
+};
+const MODS=["Premium","Mini","Edición limitada","Eco","Vintage","Artesanal","Compacto","Deluxe","Essentials","Pro"];
+const PRODUCTS=[...BASE];
+let nextId=100;
+CATS.slice(1).forEach(c=>{
+  const nouns=POOL[c];
+  for(let k=0;PRODUCTS.filter(p=>p.cat===c).length<100;k++){
+    const [n,e]=nouns[k%nouns.length];
+    const m=MODS[Math.floor(k/nouns.length)%MODS.length];
+    const price=Math.round((40+((nextId*97)%1400))/5)*5;
+    PRODUCTS.push({id:nextId++,name:`${n} ${m}`,emoji:e,price,cat:c});
+  }
+});
+
+let balance=1000000, cart={}, view="shop", cat="Todos", q="", lastOrder=null;
+
+const $=s=>document.querySelector(s);
+const fmt=n=>"🪙 "+n.toLocaleString("es-MX")+" PC";
+const shipOf=s=>(s===0||s>=500)?0:60;
+
+function items(){
+  return Object.entries(cart).map(([id,n])=>({p:PRODUCTS.find(x=>x.id==id),n})).filter(i=>i.p);
+}
+function totals(){
+  const it=items();
+  const sub=it.reduce((a,i)=>a+i.p.price*i.n,0);
+  const ship=shipOf(sub);
+  const count=it.reduce((a,i)=>a+i.n,0);
+  return{it,sub,ship,total:sub+ship,count};
+}
+function sumHTML(t){
+  return `<div class="line"><span>Subtotal</span><span>${fmt(t.sub)}</span></div>
+  <div class="line"><span>Envío</span><span>${t.ship===0?"Gratis":fmt(t.ship)}</span></div>
+  <div class="line total"><span>Total</span><span>${fmt(t.total)}</span></div>`;
+}
+
+function show(v){
+  view=v;
+  ["shop","cart","checkout","thanks"].forEach(id=>$("#"+id).hidden=(id!==v));
+  window.scrollTo(0,0);
+  render();
+}
+
+function render(){
+  $("#bal").textContent=fmt(balance);
+  const t=totals();
+  $("#cartCount").textContent=t.count;
+  if(view==="shop") renderShop();
+  if(view==="cart") renderCart(t);
+  if(view==="checkout") renderCheckout(t);
+}
+
+function renderShop(){
+  $("#chips").innerHTML=CATS.map(c=>`<button class="chip ${c===cat?"on":""}" data-cat="${c}">${c}</button>`).join("");
+  const list=PRODUCTS.filter(p=>(cat==="Todos"||p.cat===cat)&&p.name.toLowerCase().includes(q.toLowerCase()));
+  $("#grid").innerHTML=list.length?list.map(p=>`
+    <article class="card">
+      <div class="emoji">${p.emoji}</div>
+      <div class="name">${p.name}</div>
+      <div class="price">${fmt(p.price)}</div>
+      <button class="btn small" data-add="${p.id}">Añadir al carrito</button>
+    </article>`).join(""):`<p class="muted">No encontramos productos con esa búsqueda.</p>`;
+}
+
+function renderCart(t){
+  if(!t.count){
+    $("#cartList").innerHTML=`<div class="empty"><div class="big">🛒</div><p>Tu carrito está vacío.</p><p class="muted">Tómate tu tiempo, no hay prisa.</p><button class="btn" data-go="shop">Ir a la tienda</button></div>`;
+    $("#cartSum").hidden=true;
+    return;
+  }
+  $("#cartSum").hidden=false;
+  $("#cartList").innerHTML=t.it.map(({p,n})=>`
+    <div class="row">
+      <div class="emoji sm">${p.emoji}</div>
+      <div class="grow"><div class="name">${p.name}</div><div class="muted">${fmt(p.price)} c/u</div></div>
+      <div class="qty">
+        <button data-id="${p.id}" data-qty="-1" aria-label="Quitar uno">−</button>
+        <span>${n}</span>
+        <button data-id="${p.id}" data-qty="1" aria-label="Añadir uno">+</button>
+      </div>
+      <div class="sub">${fmt(p.price*n)}</div>
+      <button class="link" data-del="${p.id}">Quitar</button>
+    </div>`).join("");
+  $("#sumLines").innerHTML=sumHTML(t);
+}
+
+function renderCheckout(t){
+  $("#coSum").innerHTML=t.it.map(({p,n})=>`<div class="line"><span>${n} × ${p.name}</span><span>${fmt(p.price*n)}</span></div>`).join("")+sumHTML(t);
+  const short=t.total>balance;
+  $("#coWarn").hidden=!short;
+  $("#coBtn").disabled=short||t.count===0;
+  $("#coBal").textContent=fmt(balance);
+}
+
+let toastTimer;
+function toast(msg){
+  const el=$("#toast");
+  el.textContent=msg;
+  el.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove("on"),1800);
+}
+
+document.addEventListener("click",e=>{
+  const el=e.target.closest("button");
+  if(!el) return;
+  const d=el.dataset;
+  if(d.add){
+    cart[d.add]=(cart[d.add]||0)+1;
+    toast("Añadido: "+PRODUCTS.find(p=>p.id==d.add).name);
+    render();
+  }else if(d.cat){
+    cat=d.cat; render();
+  }else if(d.qty){
+    cart[d.id]=(cart[d.id]||0)+Number(d.qty);
+    if(cart[d.id]<=0) delete cart[d.id];
+    render();
+  }else if(d.del){
+    delete cart[d.del]; render();
+  }else if(d.recharge){
+    balance+=1000;
+    toast("Recargaste 🪙 1,000 PC (ficticios)");
+    render();
+  }else if(d.go){
+    if(d.go==="checkout" && totals().count===0) return;
+    show(d.go);
+  }
+});
+
+$("#q").addEventListener("input",e=>{ q=e.target.value; render(); });
+
+$("#coForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const t=totals();
+  if(!t.count||t.total>balance) return;
+  const btn=$("#coBtn");
+  btn.disabled=true;
+  btn.textContent="Procesando…";
+  $("#loader").hidden=false;
+  setTimeout(()=>{
+    balance-=t.total;
+    lastOrder={id:"PX-"+Math.floor(100000+Math.random()*900000),total:t.total,left:balance};
+    cart={};
+    $("#loader").hidden=true;
+    btn.textContent="Confirmar compra";
+    $("#orderId").textContent=lastOrder.id;
+    $("#paid").textContent=fmt(lastOrder.total);
+    $("#left").textContent=fmt(lastOrder.left);
+    show("thanks");
+  },1800);
+});
+
+show("shop");
+</script>
+</body>
+</html>
